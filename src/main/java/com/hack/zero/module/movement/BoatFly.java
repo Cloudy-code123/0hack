@@ -31,6 +31,12 @@ public class BoatFly extends Module {
     @Override
     protected void onDisable() {
         tickCounter = 0;
+        if (mc.player != null && mc.world != null && mc.player.hasVehicle()) {
+            Entity vehicle = mc.player.getVehicle();
+            if (vehicle instanceof BoatEntity boat) {
+                boat.setNoGravity(false);
+            }
+        }
     }
 
     @Override
