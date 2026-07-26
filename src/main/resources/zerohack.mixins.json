@@ -1,0 +1,22 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.hack.zero.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MinecraftClientMixin",
+    "ClientPlayerEntityMixin",
+    "PlayerEntityMixin",
+    "LivingEntityMixin",
+    "EntityMixin",
+    "GameRendererMixin",
+    "WorldRendererMixin",
+    "ClientPlayNetworkHandlerMixin",
+    "BlockModelRendererMixin",
+    "BlockMixin",
+    "BlockStateMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

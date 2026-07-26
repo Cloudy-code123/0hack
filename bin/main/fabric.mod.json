@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "zerohack",
+  "version": "${version}",
+  "name": "0hack",
+  "description": "0hack Client",
+  "authors": [
+    "0hack"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.hack.zero.ZeroHack"
+    ]
+  },
+  "mixins": [
+    "zerohack.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "fabric-api": "*",
+    "minecraft": "~1.21.7",
+    "java": ">=21"
+  }
+}
