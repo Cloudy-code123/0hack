@@ -75,11 +75,13 @@ public final class ESP extends Module {
 
                 Box box = living.getBoundingBox().expand(0.04).offset(-camera.x, -camera.y, -camera.z);
 
-                float red = 1.0f, green = 0.2f, blue = 0.2f;
-                String currentMode = (String) mode.getValue();
-                switch (currentMode) {
-                    case "Outline" -> { red = 0.2f; green = 1.0f; blue = 0.2f; }
-                    case "Glow"    -> { red = 0.2f; green = 0.8f; blue = 1.0f; }
+                float red, green, blue;
+                if (living instanceof PlayerEntity) {
+                    red = 0.0f; green = 0.4f; blue = 1.0f;
+                } else if (living instanceof AnimalEntity || living instanceof WaterAnimalEntity) {
+                    red = 1.0f; green = 0.6f; blue = 0.0f;
+                } else {
+                    red = 1.0f; green = 0.2f; blue = 0.2f;
                 }
 
                 VertexRendering.drawBox(context.matrixStack(), lines, box, red, green, blue, 1.0f);
