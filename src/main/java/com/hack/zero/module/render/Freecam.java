@@ -3,6 +3,7 @@ package com.hack.zero.module.render;
 import com.hack.zero.module.Category;
 import com.hack.zero.module.Module;
 import com.hack.zero.module.setting.BooleanSetting;
+import com.hack.zero.module.setting.ModeSetting;
 import com.hack.zero.module.setting.NumberSetting;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -20,6 +21,7 @@ import net.minecraft.world.World;
 import org.joml.Vector3d;
 
 public class Freecam extends Module {
+    private final ModeSetting viewMode = new ModeSetting("Mode", "First Person", "First Person", "Third Person");
     private final NumberSetting speed = new NumberSetting("Speed", 1.0, 0.1, 20.0, 0.1);
     private final NumberSetting speedScrollSensitivity = new NumberSetting("Scroll Sensitivity", 0.0, 0.0, 2.0, 0.1);
     private final BooleanSetting staySneaking = new BooleanSetting("Stay Sneaking", true);
@@ -30,6 +32,8 @@ public class Freecam extends Module {
     private final BooleanSetting showHands = new BooleanSetting("Show Hands", true);
     private final BooleanSetting rotate = new BooleanSetting("Rotate", false);
     private final BooleanSetting staticView = new BooleanSetting("Static", true);
+    private final BooleanSetting showPlayer = new BooleanSetting("Show Player", true);
+    private final BooleanSetting movePlayer = new BooleanSetting("Move Player", false);
 
     public final Vector3d pos = new Vector3d();
 
@@ -41,12 +45,19 @@ public class Freecam extends Module {
     private boolean bobView;
 
     private boolean isSneaking;
+    private boolean lastPerspectiveKeyDown;
+
+    private boolean wasNoClip;
+    private boolean wasInvulnerable;
+
+    private Vec3d bodyPos;
 
     private float lastHealth;
     private RegistryKey<World> lastDim;
 
     public Freecam() {
         super("Freecam", "Allows the camera to move away from the player.", Category.RENDER, 0);
+        addSetting(viewMode);
         addSetting(speed);
         addSetting(speedScrollSensitivity);
         addSetting(staySneaking);
@@ -57,6 +68,8 @@ public class Freecam extends Module {
         addSetting(showHands);
         addSetting(rotate);
         addSetting(staticView);
+        addSetting(showPlayer);
+        addSetting(movePlayer);
 
         ClientPlayConnectionEvents.DISCONNECT.register(this::onDisconnect);
         WorldRenderEvents.LAST.register(this::onWorldRender);
@@ -91,6 +104,13 @@ public class Freecam extends Module {
 
         isSneaking = mc.options.sneakKey.isPressed();
 
+        wasNoClip = mc.player.noClip;
+        wasInvulnerable = mc.player.isInvulnerable();
+        bodyPos = mc.player.getPos();
+
+        applyPerspectiveMode();
+        mc.player.setInvulnerable(true);
+
         lastHealth = mc.player.getHealth();
         lastDim = mc.player.getWorld().getRegistryKey();
 
@@ -110,8 +130,13 @@ public class Freecam extends Module {
             mc.options.getFovEffectScale().setValue(fovScale);
             mc.options.getBobView().setValue(bobView);
         }
+        if (mc.player != null) {
+            mc.player.noClip = wasNoClip;
+            mc.player.setInvulnerable(wasInvulnerable);
+        }
 
         isSneaking = false;
+        lastPerspectiveKeyDown = false;
     }
 
     @Override
@@ -119,9 +144,28 @@ public class Freecam extends Module {
         if (mc.player == null || mc.world == null) return;
 
         Entity cameraEntity = mc.getCameraEntity();
-        if (cameraEntity != null && cameraEntity.isInsideWall()) cameraEntity.noClip = true;
+        if (cameraEntity != null && cameraEntity.isInsideWall()) {
+            cameraEntity.noClip = true;
+        }
 
-        if (!perspective.isFirstPerson()) mc.options.setPerspective(Perspective.FIRST_PERSON);
+        if (mc.player != null) {
+            mc.player.noClip = true;
+            if (!movePlayer.isOn() && bodyPos != null) {
+                mc.player.setPosition(bodyPos.x, bodyPos.y, bodyPos.z);
+                mc.player.setVelocity(Vec3d.ZERO);
+                mc.player.fallDistance = 0.0f;
+            }
+        }
+
+        boolean perspectiveKeyDown = mc.options.togglePerspectiveKey.isPressed();
+        if (perspectiveKeyDown && !lastPerspectiveKeyDown) {
+            viewMode.cycle();
+        }
+        lastPerspectiveKeyDown = perspectiveKeyDown;
+
+        if (perspective != null) {
+            applyPerspectiveMode();
+        }
 
         if (rotate.isOn()) rotatePlayer();
 
@@ -193,6 +237,14 @@ public class Freecam extends Module {
         if (down) moveY -= s * speedValue;
 
         pos.set(pos.x + moveX * ticks, pos.y + moveY * ticks, pos.z + moveZ * ticks);
+
+        if (movePlayer.isOn() && mc.player != null) {
+            mc.player.noClip = true;
+            mc.player.setYaw(yaw);
+            mc.player.setPitch(pitch);
+            mc.player.setPosition(pos.x, pos.y - mc.player.getEyeHeight(mc.player.getPose()), pos.z);
+            mc.player.fallDistance = 0.0f;
+        }
     }
 
     private void rotatePlayer() {
@@ -245,6 +297,18 @@ public class Freecam extends Module {
 
     public boolean renderHands() {
         return !isEnabled() || showHands.isOn();
+    }
+
+    public boolean showPlayer() {
+        return isEnabled() && isThirdPersonMode() && showPlayer.isOn();
+    }
+
+    private boolean isThirdPersonMode() {
+        return "Third Person".equals(viewMode.getValue());
+    }
+
+    private void applyPerspectiveMode() {
+        mc.options.setPerspective(isThirdPersonMode() ? Perspective.THIRD_PERSON_BACK : Perspective.FIRST_PERSON);
     }
 
     public boolean staySneaking() {
