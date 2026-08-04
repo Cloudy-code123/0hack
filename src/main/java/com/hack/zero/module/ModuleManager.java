@@ -34,6 +34,7 @@ public class ModuleManager {
         modules.add(new ESP());
         modules.add(new Tracers());
         modules.add(new Fullbright());
+        modules.add(new Freecam());
         modules.add(new XRay());
 
         System.out.println("[0hack] ModuleManager: Registered " + modules.size() + " modules");

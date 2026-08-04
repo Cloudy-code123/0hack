@@ -140,6 +140,13 @@ public class ClickGui extends Screen {
             modeSetting.cycle();
         } else if (setting instanceof ColorSetting colorSetting) {
             colorSetting.cycle();
+        } else if (setting instanceof BlockListSetting blockListSetting) {
+            com.hack.zero.module.render.XRay xray = com.hack.zero.module.render.XRay.getInstance();
+            if (xray != null && blockListSetting == xray.getWhitelistSetting()) {
+                this.client.setScreen(new BlockListScreen(blockListSetting, xray::resetBlocks));
+            } else {
+                this.client.setScreen(new BlockListScreen(blockListSetting, () -> blockListSetting.getValue().clear()));
+            }
         }
     }
 }

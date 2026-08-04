@@ -1,6 +1,8 @@
 package com.hack.zero.mixin;
 
+import com.hack.zero.ZeroHack;
 import com.hack.zero.module.movement.Velocity;
+import com.hack.zero.module.render.Freecam;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,5 +23,19 @@ public abstract class EntityMixin {
             if (velocity == null || !velocity.isEnabled()) return;
             ci.cancel();
         } catch (Exception ignored) {}
+    }
+
+    @Inject(method = "changeLookDirection", at = @At("HEAD"), cancellable = true)
+    private void zeroHack$changeLookDirection(double cursorDeltaX, double cursorDeltaY, CallbackInfo ci) {
+        if (!((Object) this instanceof ClientPlayerEntity)) return;
+
+        ZeroHack instance = ZeroHack.getInstance();
+        if (instance == null) return;
+
+        Freecam freecam = (Freecam) instance.getModuleManager().getModule("Freecam").orElse(null);
+        if (freecam != null && freecam.isEnabled()) {
+            freecam.changeLookDirection(cursorDeltaX * 0.15, cursorDeltaY * 0.15);
+            ci.cancel();
+        }
     }
 }

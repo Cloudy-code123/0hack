@@ -113,7 +113,9 @@ public class CategoryPanel {
 
                 String arrow = expandedModule ? "\u25BC" : "\u25B6";
                 int nameColor = mod.isEnabled() ? ENABLED_COLOR : DISABLED_COLOR;
-                context.drawTextWithShadow(mc.textRenderer, mod.getName(), x + 14, moduleTop + 5, nameColor);
+                String info = mod.getInfoString();
+                String moduleText = info != null ? mod.getName() + " \u00a77" + info : mod.getName();
+                context.drawTextWithShadow(mc.textRenderer, moduleText, x + 14, moduleTop + 5, nameColor);
                 context.drawTextWithShadow(mc.textRenderer, arrow, x + 4, moduleTop + 5, ARROW_COLOR);
 
                 String toggleText = mod.isEnabled() ? "ON" : "OFF";
@@ -124,7 +126,7 @@ public class CategoryPanel {
 
                 if (!expandedModule && !mod.getSettings().isEmpty() && mod.isExpandable()) {
                     String hint = "RClick";
-                    context.drawTextWithShadow(mc.textRenderer, hint, x + 14 + mc.textRenderer.getWidth(mod.getName()) + 4, moduleTop + 5, HINT_COLOR);
+                    context.drawTextWithShadow(mc.textRenderer, hint, x + 14 + mc.textRenderer.getWidth(moduleText) + 4, moduleTop + 5, HINT_COLOR);
                 }
             }
 
@@ -207,6 +209,13 @@ public class CategoryPanel {
             context.fill(boxX + 26, boxY - 1, boxX + 27, boxY + 17, 0xFF555555);
             context.fill(boxX - 1, boxY - 1, boxX + 27, boxY, 0xFF555555);
             context.fill(boxX - 1, boxY + 16, boxX + 27, boxY + 17, 0xFF555555);
+
+        } else if (setting instanceof BlockListSetting blockListSetting) {
+            context.fill(sx + 1, sy, sx + WIDTH - 1, sy + SETTING_HEIGHT, MODULE_COLOR);
+            context.drawTextWithShadow(mc.textRenderer, setting.getName(), sx + 10, sy + 6, TEXT_COLOR);
+
+            String countStr = "(" + blockListSetting.getValue().size() + ")";
+            context.drawTextWithShadow(mc.textRenderer, countStr, sx + WIDTH - mc.textRenderer.getWidth(countStr) - 8, sy + 6, HINT_COLOR);
 
         } else if (setting instanceof NumberSetting numSetting) {
             context.fill(sx + 1, sy, sx + WIDTH - 1, sy + SETTING_HEIGHT, MODULE_COLOR);

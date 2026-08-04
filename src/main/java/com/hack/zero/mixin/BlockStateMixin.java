@@ -10,13 +10,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractBlock.AbstractBlockState.class)
-public class BlockStateMixin {
+public abstract class BlockStateMixin {
+    @Inject(method = "getOpacity", at = @At("HEAD"), cancellable = true)
+    private void zeroHack$xrayOpacity(CallbackInfoReturnable<Integer> cir) {
+        if (XRay.isActive()) cir.setReturnValue(0);
+    }
 
     @Inject(method = "getAmbientOcclusionLightLevel", at = @At("HEAD"), cancellable = true)
-    private void onGetAmbientOcclusionLightLevel(BlockView world, BlockPos pos, CallbackInfoReturnable<Float> cir) {
-        XRay xray = XRay.getInstance();
-        if (xray != null && xray.isEnabled()) {
-            cir.setReturnValue(1.0f);
-        }
+    private void zeroHack$xrayAmbientOcclusion(BlockView world, BlockPos pos, CallbackInfoReturnable<Float> cir) {
+        if (XRay.isActive()) cir.setReturnValue(1.0F);
     }
 }

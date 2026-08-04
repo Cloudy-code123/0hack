@@ -1,6 +1,7 @@
 package com.hack.zero.util;
 
 import com.mojang.blaze3d.opengl.GlStateManager;
+import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DepthTestFunction;
 import net.minecraft.client.gl.RenderPipelines;
@@ -39,6 +40,30 @@ public class RenderUtil {
 
     public static RenderLayer getEspLines() {
         return ESP_LINES;
+    }
+
+    // Modern 1.21.7 pipeline – NO depth test, translucent blend → filled highlight seen through walls
+    private static final RenderPipeline ESP_FILLED_PIPELINE = RenderPipeline.builder(
+            RenderPipelines.POSITION_COLOR_SNIPPET
+    )
+    .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+    .withDepthWrite(false)
+    .withBlend(BlendFunction.TRANSLUCENT)
+    .withCull(false)
+    .withLocation("zerohack/esp_filled")
+    .build();
+
+    public static final RenderLayer ESP_FILLED = RenderLayer.of(
+            "zerohack_esp_filled",
+            1536,
+            false,
+            true,
+            ESP_FILLED_PIPELINE,
+            RenderLayer.MultiPhaseParameters.builder().build(false)
+    );
+
+    public static RenderLayer getEspFilled() {
+        return ESP_FILLED;
     }
 
     public static void setupRenderState() {

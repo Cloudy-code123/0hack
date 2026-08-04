@@ -9,12 +9,20 @@
     "PlayerEntityMixin",
     "LivingEntityMixin",
     "EntityMixin",
+    "KeyboardInputMixin",
+    "InputAccessor",
+    "CameraMixin",
+    "MouseMixin",
     "GameRendererMixin",
     "WorldRendererMixin",
     "ClientPlayNetworkHandlerMixin",
-    "BlockModelRendererMixin",
     "BlockMixin",
-    "BlockStateMixin"
+    "BlockModelRendererMixin",
+    "BlockStateMixin",
+    "FluidRendererMixin",
+    "ChunkOcclusionDataBuilderMixin",
+    "BlockEntityRenderDispatcherMixin",
+    "RenderLayersMixin"
   ],
   "injectors": {
     "defaultRequire": 1
